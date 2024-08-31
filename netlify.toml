@@ -1,0 +1,5 @@
+[[redirects]]
+  # Redirect all 404 errors to index.html (useful for single-page apps)
+  from = "/*"
+  to = "/index.html"
+  status = 200
