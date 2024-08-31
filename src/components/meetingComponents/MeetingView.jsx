@@ -25,7 +25,7 @@ const MeetingView = ({
   users,
   isWhiteBoardOpen,
   setIsWhiteBoardOpen,
-  meetingStatus,
+  meetingStatus="true",
   isRecordingOpen,
   setIsRecordingOpen,
   isBreakoutRoom,
@@ -37,7 +37,7 @@ const MeetingView = ({
 
   console.log('inside meeting view', meetingStatus)
   return (
-    <div className="px-5 py-5 flex flex-col justify-between items-between h-full">
+    <div className="px-5 py-5 flex flex-col justify-between items-between h-full w-full">
       <div className="h-1/5">
         {/* First ------ nav bar */}
         <div className="flex justify-between items-center pb-2">

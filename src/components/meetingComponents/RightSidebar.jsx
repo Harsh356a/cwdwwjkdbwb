@@ -9,6 +9,8 @@ import axios from "axios";
 
 const RightSidebar = ({
   users,
+  socket,
+  setMessages,
   setUsers,
   role,
   isWhiteBoardOpen,
@@ -170,7 +172,7 @@ const RightSidebar = ({
       <div
         className={`flex ${
           isSidebarOpen ? "w-80" : "w-24"
-        } transition-width duration-300 bg-white h-screen rounded-r-xl relative ${role=="Observer"&&"hidden"}`}
+        } transition-width duration-300 bg-white h-screen rounded-r-xl relative `}
       >
         {isSidebarOpen ? (
           <LuArrowRightToLine
@@ -189,6 +191,8 @@ const RightSidebar = ({
           {isSidebarOpen ? (
             // If side bar open
         <RightSidebarOpenUi
+        socket={socket}
+        setMessages={setMessages}
               users={users}
               setUsers={setUsers}
               activeTab={activeTab}

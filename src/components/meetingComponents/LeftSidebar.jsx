@@ -8,6 +8,7 @@ import LeftSidebarCloseUi from "./LeftSidebarCloseUi";
 import axios from "axios";
 
 const LeftSidebar = ({
+  socket,
   users,
   setUsers,
   role,
@@ -27,6 +28,7 @@ const LeftSidebar = ({
   messages,
   sendMessage,
   userName,
+  setMessages,
   meetingId
 }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -189,6 +191,8 @@ const LeftSidebar = ({
           {isSidebarOpen ? (
             // If side bar open
             <LeftSidebarOpenUi
+            setMessages={setMessages}
+            socket={socket}
               users={users}
               setUsers={setUsers}
               activeTab={activeTab}

@@ -10,7 +10,7 @@ import { IoIosMicOff } from "react-icons/io";
 
 const OngoingMeeting = ({users}) => {
   return (
-    <div className="pt-2 bg-black flex-1 rounded-xl flex flex-col justify-center items-center">
+    <div className="pt-2 bg-black flex-1 rounded-xl flex flex-col justify-center items-center w-full">
         {/* top bar */}
         <div className="px-10 flex justify-between items-center w-full">
           <div className="flex justify-start items-center gap-3">
