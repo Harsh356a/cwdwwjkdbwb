@@ -33,7 +33,7 @@ const Page = () => {
   const [peers, setPeers] = useState([]);
   const [streams, setStreams] = useState([]);
   const [messages, setMessages] = useState([]);
-
+  const [peerData, setPeerData] = useState({});
   const handleBreakoutRoomChange = (roomName) => {
     const room = breakoutRooms.find((room) => room.roomName === roomName);
     setSelectedRoom(room);
@@ -111,6 +111,7 @@ const Page = () => {
 
   const acceptParticipant = (participant) => {
     socket.emit("admitParticipant", participant.socketId);
+    setPeerData(participant.name);
   };
 
   const addToPeersOrStreams = (participant) => {
@@ -178,6 +179,7 @@ const Page = () => {
             </div>
             <div className="flex-1 w-full max-h-[100vh] overflow-hidden">
               <MeetingView
+              peerData={peerData}
                 role={role}
                 users={peers}
                 isWhiteBoardOpen={isWhiteBoardOpen}
@@ -206,6 +208,7 @@ const Page = () => {
           <>
             <div className="h-full">
               <LeftSidebar
+              peerData={peerData}
                 socket={socket}
                 users={peers}
                 setUsers={setUsers}
@@ -232,6 +235,8 @@ const Page = () => {
             </div>
             <div className="flex-1 w-full max-h-[100vh] overflow-hidden">
               <MeetingView
+                            peerData={peerData}
+
                 role={role}
                 users={peers}
                 isWhiteBoardOpen={isWhiteBoardOpen}
@@ -277,6 +282,8 @@ const Page = () => {
           <>
             <MeetingView
               role={role}
+              peerData={peerData}
+
               users={peers}
               isWhiteBoardOpen={isWhiteBoardOpen}
               setIsWhiteBoardOpen={setIsWhiteBoardOpen}

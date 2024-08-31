@@ -9,6 +9,7 @@ import axios from "axios";
 
 const LeftSidebar = ({
   socket,
+  peerData,
   users,
   setUsers,
   role,
@@ -194,6 +195,7 @@ const LeftSidebar = ({
             setMessages={setMessages}
             socket={socket}
               users={users}
+              peerData={peerData}
               setUsers={setUsers}
               activeTab={activeTab}
               setActiveTab={setActiveTab}

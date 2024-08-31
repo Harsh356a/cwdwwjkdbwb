@@ -1,4 +1,9 @@
-import { FaHeadphones, FaUserFriends, FaVideo, FaVideoSlash } from "react-icons/fa";
+import {
+  FaHeadphones,
+  FaUserFriends,
+  FaVideo,
+  FaVideoSlash,
+} from "react-icons/fa";
 import { IoCaretDownSharp, IoLogOutSharp } from "react-icons/io5";
 import Image from "next/image";
 import meetingImage from "../../../public/meeting.jpeg";
@@ -8,23 +13,29 @@ import { PiLineVerticalBold } from "react-icons/pi";
 import { CgMenuGridR } from "react-icons/cg";
 import { IoIosMicOff } from "react-icons/io";
 
-const OngoingMeeting = ({users}) => {
+const OngoingMeeting = ({ users,peerData }) => {
   return (
     <div className="pt-2 bg-black flex-1 rounded-xl flex flex-col justify-center items-center w-full">
-        {/* top bar */}
-        <div className="px-10 flex justify-between items-center w-full">
-          <div className="flex justify-start items-center gap-3">
+      {/* top bar */}
+      <div className="px-10 flex justify-between items-center w-full">
+        <div className="flex justify-start items-center gap-3">
           <MdVerifiedUser className="bg-[#111111] rounded-lg p-0.5 text-[#69D569]" />
           <p className="text-white">Original Sound: Off</p>
           <IoCaretDownSharp className="text-white" />
-          </div>
-          <div className="bg-[#242424] flex justify-between items-center gap-2 p-1 rounded-lg">
-          <CgMenuGridR className="text-white"/>
-          <p className="text-white text-sm">View</p>
-          </div>
         </div>
-        {/* video stream */}
-        <div className="flex-1 py-5 px-10 flex justify-center items-center ">
+        <div className="bg-[#242424] flex justify-between items-center gap-2 p-1 rounded-lg">
+          <CgMenuGridR className="text-white" />
+          <p className="text-white text-sm">View</p>
+        </div>
+      </div>
+      {/* video stream */}
+      <iframe
+        src={`https://testing--inspiring-cendol-60afd6.netlify.app/room/123?userName=${peerData}?roomName="123`}
+        width="800px"
+        height="500px"
+        allow="microphone; camera; display-capture"
+      ></iframe>
+      {/* <div className="flex-1 py-5 px-10 flex justify-center items-center ">
          <div className="grid grid-cols-4 gap-3">
          {
             users && users.map(user => 
@@ -48,9 +59,9 @@ const OngoingMeeting = ({users}) => {
             )
           }
          </div>
-        </div>
-        {/* control bar */}
-        <div className="bg-[#1b1b1b] py-2 flex justify-center items-center gap-4 w-full rounded-b-xl">
+        </div> */}
+      {/* control bar */}
+      {/* <div className="bg-[#1b1b1b] py-2 flex justify-center items-center gap-4 w-full rounded-b-xl">
           <FaHeadphones className="text-custom-gray-2"/>
           <FaVideoSlash className="text-custom-gray-2"/>
           <MdScreenShare className="text-[#2CD95F]"/>
@@ -58,9 +69,9 @@ const OngoingMeeting = ({users}) => {
           <BsThreeDots className="text-custom-gray-2"/>
           <PiLineVerticalBold  className="text-custom-gray-2"/>
           <MdCallEnd className="text-[#CD3B33]"/>
-        </div>
-      </div>
-  )
-}
+        </div> */}
+    </div>
+  );
+};
 
-export default OngoingMeeting
+export default OngoingMeeting;

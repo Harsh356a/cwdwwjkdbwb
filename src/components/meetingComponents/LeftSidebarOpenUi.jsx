@@ -25,6 +25,7 @@ import ChatDashboard from "./ChatDashboard";
 
 const LeftSidebarOpenUi = ({
   users,
+  peerData,
   setUsers,
   activeTab,
   setActiveTab,

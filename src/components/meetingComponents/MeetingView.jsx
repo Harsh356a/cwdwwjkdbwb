@@ -23,6 +23,7 @@ import EndOFMeeting from "./EndOFMeeting";
 const MeetingView = ({
   role,
   users,
+  peerData,
   isWhiteBoardOpen,
   setIsWhiteBoardOpen,
   meetingStatus="true",
@@ -92,7 +93,7 @@ const MeetingView = ({
             </div>
           ) : (
             <div className="flex-1">
-              <OngoingMeeting users={users} />
+              <OngoingMeeting users={users} peerData={peerData} />
             </div>
           )}
         </>

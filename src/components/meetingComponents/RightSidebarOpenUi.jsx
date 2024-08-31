@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Button from "../shared/button";
 import Image from "next/image";
 import { LuClipboardSignature } from "react-icons/lu";
-import { FaAngleDown, FaVideo } from "react-icons/fa";
+import { FaAngleDown, FaFolder, FaTrash, FaVideo } from "react-icons/fa";
 import {
   BsChatSquareDotsFill,
   BsChatSquareFill,
@@ -10,7 +10,7 @@ import {
 } from "react-icons/bs";
 import HeadingLg from "../shared/HeadingLg";
 import Search from "../singleComponent/Search";
-import { IoMdMic } from "react-icons/io";
+// import { IoMdMic } from "react-icons/io";
 import userImage from "../../../public/user.jpg";
 import groupChatImage from "../../../public/group-chat.png";
 import { IoClose, IoRemoveCircle, IoSend } from "react-icons/io5";
@@ -19,6 +19,8 @@ import RemoveUserModal from "../singleComponent/RemoveUserModal";
 import MoveToWaitingRoomModal from "../singleComponent/MoveToWaitingRoomModal";
 import toast from "react-hot-toast";
 import notify from "@/utils/notify";
+import { IoIosDocument, IoMdMic } from "react-icons/io";
+import axios from "axios";
 import { PiCirclesFourFill } from "react-icons/pi";
 import Dropdown from "../shared/Dropdown";
 import ChatDashboard from "./ChatDashboard";
@@ -53,17 +55,20 @@ const LeftSidebarOpenUi = ({
   userName,
   meetingId,
   socket,
-  setMessages
+  setMessages,
 }) => {
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
   const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
-  const [isModeratorPopupModalOpen, setIsModeratorPopupModalOpen] = useState(false);
+  const [isModeratorPopupModalOpen, setIsModeratorPopupModalOpen] =
+    useState(false);
   const [userToRemove, setUserToRemove] = useState(null);
   const [userToMove, setUserToMove] = useState(null);
   const [modalPosition, setModalPosition] = useState({ top: 0, left: 0 });
   const [inputMessage, setInputMessage] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedReceiverId, setSelectedReceiverId] = useState(null);
+  const [fileList, setFileList] = useState([]);
+
   console.log("Socket in LeftSidebar:", socket?.id);
   const modalRef = useRef();
 
@@ -73,9 +78,9 @@ const LeftSidebarOpenUi = ({
         meetingId: meetingId,
         senderName: userName,
         receiverName: selectedChat ? selectedChat.name : "All",
-        message: inputMessage.trim()
+        message: inputMessage.trim(),
       };
-  
+
       console.log("Sending message:", newMessage);
       sendMessage(newMessage);
       setInputMessage("");
@@ -130,7 +135,49 @@ const LeftSidebarOpenUi = ({
       closeModal();
     }
   };
+  const handleFileUpload = async (event) => {
+    console.log("File upload triggered"); // Debug log
+    const file = event.target.files[0];
+    if (file) {
+      console.log(file); // Debug log
+      const formData = new FormData();
+      formData.append("file", file);
 
+      try {
+        await axios.post(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/upload`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/files`
+        );
+        setFileList(response.data);
+      } catch (error) {
+        console.error("Error uploading file:", error);
+      }
+    }
+  };
+  useEffect(() => {
+    // Fetch initial files
+    const fetchFiles = async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/files`
+        );
+        setFileList(response.data);
+        console.log("files", response.data);
+      } catch (error) {
+        console.error("Error fetching files:", error);
+      }
+    };
+
+    fetchFiles();
+  }, []);
   const handleRemoveUser = (userId) => {
     const userName = users.find((user) => user.id === userId);
     notify("success", "Success", `${userName.name} has been removed`);
@@ -140,7 +187,11 @@ const LeftSidebarOpenUi = ({
 
   const handleMoveUser = (userId) => {
     const userName = users.find((user) => user.id === userId);
-    notify("success", "Success", `${userName.name} has been moved to the waiting room`);
+    notify(
+      "success",
+      "Success",
+      `${userName.name} has been moved to the waiting room`
+    );
     setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
     setIsMoveModalOpen(false);
   };
@@ -164,14 +215,14 @@ const LeftSidebarOpenUi = ({
   }, [isModeratorPopupModalOpen]);
 
   useEffect(() => {
-    console.log("triggers")
+    console.log("triggers");
     if (socket) {
       console.log("Socket connected in LeftSidebarOpenUi:", socket.id);
       socket.on("newMessage", (message) => {
         console.log("Received new message:", message);
-        setMessages(prevMessages => [...prevMessages, message]);
+        setMessages((prevMessages) => [...prevMessages, message]);
       });
-  
+
       return () => {
         console.log("Cleaning up socket listeners in LeftSidebarOpenUi");
         socket.off("newMessage");
@@ -180,7 +231,15 @@ const LeftSidebarOpenUi = ({
       console.log("Socket not available in LeftSidebarOpenUi");
     }
   });
-
+  const handleDeleteFile = async (fileId) => {
+    try {
+      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/files/${fileId}`);
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/files`);
+      setFileList(response.data);
+    } catch (error) {
+      console.error("Error deleting file:", error);
+    }
+  };
   return (
     <>
       {isBreakoutRoom && role !== "Participant" ? (
@@ -241,29 +300,6 @@ const LeftSidebarOpenUi = ({
         </div>
       ) : (
         <div className="">
-          <div className=" lg:pt-10 px-4">
-            <Button
-              children="Whiteboard"
-              variant="meeting"
-              type="submit"
-              className="w-full py-2 rounded-xl !justify-start pl-2 mb-2"
-              icon={
-                <LuClipboardSignature className="bg-[#fcd860] p-1 text-white text-2xl rounded-md font-bold" />
-              }
-              onClick={toggleWhiteBoard}
-            />
-            <Button
-              children="Local Recording"
-              variant="meeting"
-              type="submit"
-              className="w-full py-2 rounded-xl !justify-start pl-2 mb-2"
-              icon={
-                <FaVideo className="bg-custom-orange-1 p-1 text-white text-2xl rounded-md font-bold" />
-              }
-              onClick={toggleRecordingButton}
-            />
-          </div>
-
           <div className="flex justify-start items-center gap-2 lg:py-4 mx-4">
             <BsChatSquareFill className="text-custom-dark-blue-1" />
             <HeadingLg children="BACKROOM CHAT" />
@@ -272,7 +308,7 @@ const LeftSidebarOpenUi = ({
           <div className="flex flex-col flex-grow px-4 pb-2 pt-4 bg-custom-gray-8 mb-4 rounded-xl overflow-y-auto max-h-[300px] mx-4">
             <div className="flex justify-center items-center gap-2 pb-2 ">
               <Button
-                children="Participants List"
+                children="Observers List"
                 variant="default"
                 type="submit"
                 className={`w-full py-2 rounded-xl pl-2  text-[10px] text-center px-1  ${
@@ -284,7 +320,7 @@ const LeftSidebarOpenUi = ({
               />
               <div className="w-full relative">
                 <Button
-                  children="Participants Chat"
+                  children="Observers Chat"
                   variant="default"
                   type="submit"
                   className={`w-full py-2 rounded-xl pl-2  text-[10px] text-center px-1  ${
@@ -373,7 +409,7 @@ const LeftSidebarOpenUi = ({
                     <div className="flex-grow-1 text-xs ">
                       <p className="pb-1 font-bold">{user.name}</p>
                     </div>
-                    </div>
+                  </div>
                 ))}
 
             {activeTab === "participantChat" && selectedChat && (
@@ -388,31 +424,56 @@ const LeftSidebarOpenUi = ({
                   />
                 </div>
                 <div className="flex flex-col gap-2 flex-grow w-full overflow-y-auto">
-                  {console.log("ui",messages.filter(message => message.senderName === selectedChat.name && message.receiverName === userName))}
+                  {console.log(
+                    "ui",
+                    messages.filter(
+                      (message) =>
+                        message.senderName === selectedChat.name &&
+                        message.receiverName === userName
+                    )
+                  )}
                   {messages
-                    .filter(message => 
-                      (message.senderName === selectedChat.name && message.receiverName === userName) ||
-                      (message.senderName === userName && message.receiverName === selectedChat.name)
+                    .filter(
+                      (message) =>
+                        (message.senderName === selectedChat.name &&
+                          message.receiverName === userName) ||
+                        (message.senderName === userName &&
+                          message.receiverName === selectedChat.name)
                     )
                     .map((message, index) => (
-                      <div key={index} className={`flex items-center gap-2 ${
-                        message.senderName === userName ? "justify-end" : "justify-start"
-                      }`}>
-                        <div className={`flex flex-col ${
-                          message.senderName === userName ? "items-end" : "items-start"
-                        }`}>
-                          <p className={`text-[12px] ${
-                            message.senderName === userName ? "text-blue-600" : "text-green-600"
-                          }`}>
-                            <span className="font-bold">{message.senderName}:</span> {message.message}
+                      <div
+                        key={index}
+                        className={`flex items-center gap-2 ${
+                          message.senderName === userName
+                            ? "justify-end"
+                            : "justify-start"
+                        }`}
+                      >
+                        <div
+                          className={`flex flex-col ${
+                            message.senderName === userName
+                              ? "items-end"
+                              : "items-start"
+                          }`}
+                        >
+                          <p
+                            className={`text-[12px] ${
+                              message.senderName === userName
+                                ? "text-blue-600"
+                                : "text-green-600"
+                            }`}
+                          >
+                            <span className="font-bold">
+                              {message.senderName}:
+                            </span>{" "}
+                            {message.message}
                           </p>
                           <p className="text-[#1a1a1a] text-[10px]">
                             {new Date(message.timestamp).toLocaleTimeString()}
                           </p>
                         </div>
                       </div>
-                    ))
-                  }
+                    ))}
                 </div>
 
                 <div className="flex justify-between items-center gap-2 relative w-full mt-2">
@@ -439,50 +500,56 @@ const LeftSidebarOpenUi = ({
           </div>
         </div>
       )}
-      {waitingRoom?.length > 0 && activeTab === "participantList" && role === "Moderator" && (
-        <div className="flex-grow pt-2 bg-custom-gray-8 p-4 rounded-xl mb-4 overflow-y-auto mx-4" key={waitingRoom?.length}>
-          <div className="flex justify-between items-center py-2">
-            <h1 className="font-bold text-sm ">
-              Waiting ({waitingRoom?.length})
-            </h1>
-            <Button
-              variant="primary"
-              type="submit"
-              children="Admit All"
-              className="text-xs px-2 py-1 rounded-lg text-white"
-              onClick={() =>
-                waitingRoom?.forEach((participant) =>
-                  acceptParticipant(participant)
-                )
-              }
-            />
-          </div>
-          {waitingRoom?.map((user) => (
-            <div
-              className="flex justify-center items-center gap-2 py-1"
-              key={user?.fullName}
-            >
-              <p className="text-[#1a1a1a] text-[10px] flex-grow">
-                {user?.name}
-              </p>
-              <div className="flex justify-center items-center gap-1">
-                <Button
-                  variant="primary"
-                  type="submit"
-                  children="Admit"
-                  className="text-xs px-2 py-1 rounded-lg text-white"
-                  onClick={() => acceptParticipant(user)}
-                />
-                <Button
-                  type="submit"
-                  children="Remove"
-                  className="text-xs px-2 py-1 rounded-lg text-white"
-                />
-              </div>
+
+      {/* {waitingRoom?.length > 0 &&
+        activeTab === "participantList" &&
+        role === "Moderator" && (
+          <div
+            className="flex-grow pt-2 bg-custom-gray-8 p-4 rounded-xl mb-4 overflow-y-auto mx-4"
+            key={waitingRoom?.length}
+          >
+            <div className="flex justify-between items-center py-2">
+              <h1 className="font-bold text-sm ">
+                Waiting ({waitingRoom?.length})
+              </h1>
+              <Button
+                variant="primary"
+                type="submit"
+                children="Admit All"
+                className="text-xs px-2 py-1 rounded-lg text-white"
+                onClick={() =>
+                  waitingRoom?.forEach((participant) =>
+                    acceptParticipant(participant)
+                  )
+                }
+              />
             </div>
-          ))}
-        </div>
-      )}
+            {waitingRoom?.map((user) => (
+              <div
+                className="flex justify-center items-center gap-2 py-1"
+                key={user?.fullName}
+              >
+                <p className="text-[#1a1a1a] text-[10px] flex-grow">
+                  {user?.name}
+                </p>
+                <div className="flex justify-center items-center gap-1">
+                  <Button
+                    variant="primary"
+                    type="submit"
+                    children="Admit"
+                    className="text-xs px-2 py-1 rounded-lg text-white"
+                    onClick={() => acceptParticipant(user)}
+                  />
+                  <Button
+                    type="submit"
+                    children="Remove"
+                    className="text-xs px-2 py-1 rounded-lg text-white"
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        )} */}
       {isRemoveModalOpen && (
         <RemoveUserModal
           onClose={closeRemoveUserModal}
@@ -497,6 +564,48 @@ const LeftSidebarOpenUi = ({
           userToMove={userToMove}
         />
       )}
+      <div className="mb-4">
+        {/* heading */}
+        <div className="flex justify-center items-center gap-2 px-4 pb-2 ">
+          <IoIosDocument className="text-custom-dark-blue-1 text-lg" />
+          <h1 className="uppercase font-bold flex-1 text-custom-dark-blue-2">
+            document hub
+          </h1>
+          <label className="bg-custom-orange-1 text-white rounded-xl py-1 px-3 text-xs cursor-pointer">
+            Upload File
+            <input type="file" className="hidden" onChange={handleFileUpload} />
+          </label>
+        </div>
+        {/* Upload file div */}
+        <div className="bg-custom-gray-8 rounded-xl mx-4 p-2 overflow-y-auto">
+          {/* title */}
+          <div className="flex justify-between items-center border-b border-solid border-custom-gray-3 pb-1">
+            <p className="text-xs text-custom-gray-3">Name</p>
+            <p className="text-xs text-custom-gray-3 mr-11">Size</p>
+          </div>
+          {/* files */}
+          {fileList.map((file) => (
+            <div
+              key={file.id}
+              className="flex items-center justify-between bg-gray-200 py-3 rounded"
+            >
+              <div className="flex items-center space-x-2">
+                <FaFolder className="h-3 w-3 text-custom-gray-3" />
+                <span className="text-xs text-custom-gray-3">{file.name}</span>
+              </div>
+              <div className="flex items-center space-x-4">
+                <span className="text-xs text-custom-gray-3">{file.size}</span>
+                <button
+                  className="text-red-600 hover:text-red-800"
+                  onClick={() => handleDeleteFile(file._id)}
+                >
+                  <FaTrash className="h-3 w-3" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </>
   );
 };
