@@ -402,7 +402,7 @@ const LeftSidebarOpenUi = ({
                   <div
                     key={user.name}
                     className={`bg-custom-gray-2 p-2 flex justify-center items-center gap-2 border-b border-solid border-custom-gray-1 cursor-pointer ${
-                      user.role != "Observer" && "hidden"
+                      user.role == "Participant" && "hidden"
                     }`}
                     onClick={() => setSelectedChat(user)}
                   >
