@@ -13,7 +13,7 @@ import { PiLineVerticalBold } from "react-icons/pi";
 import { CgMenuGridR } from "react-icons/cg";
 import { IoIosMicOff } from "react-icons/io";
 
-const OngoingMeeting = ({ users,peerData }) => {
+const OngoingMeeting = ({ users, peerData }) => {
   return (
     <div className="pt-2 bg-black flex-1 rounded-xl flex flex-col justify-center items-center w-full">
       {/* top bar */}
@@ -29,9 +29,9 @@ const OngoingMeeting = ({ users,peerData }) => {
         </div>
       </div>
       {/* video stream */}
-      {console.log("checing query params",peerData)}
+      {console.log("checing query params", peerData)}
       <iframe
-        src={`https://testing--inspiring-cendol-60afd6.netlify.app?userName=${peerData}&roomName="123`}
+        src={`https://testing--inspiring-cendol-60afd6.netlify.app/room/123`}
         width="800px"
         height="500px"
         allow="microphone; camera; display-capture"

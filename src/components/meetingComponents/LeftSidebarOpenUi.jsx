@@ -22,6 +22,7 @@ import notify from "@/utils/notify";
 import { PiCirclesFourFill } from "react-icons/pi";
 import Dropdown from "../shared/Dropdown";
 import ChatDashboard from "./ChatDashboard";
+import { addUser } from "../api";
 
 const LeftSidebarOpenUi = ({
   users,
@@ -54,11 +55,12 @@ const LeftSidebarOpenUi = ({
   userName,
   meetingId,
   socket,
-  setMessages
+  setMessages,
 }) => {
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
   const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
-  const [isModeratorPopupModalOpen, setIsModeratorPopupModalOpen] = useState(false);
+  const [isModeratorPopupModalOpen, setIsModeratorPopupModalOpen] =
+    useState(false);
   const [userToRemove, setUserToRemove] = useState(null);
   const [userToMove, setUserToMove] = useState(null);
   const [modalPosition, setModalPosition] = useState({ top: 0, left: 0 });
@@ -74,9 +76,9 @@ const LeftSidebarOpenUi = ({
         meetingId: meetingId,
         senderName: userName,
         receiverName: selectedChat ? selectedChat.name : "All",
-        message: inputMessage.trim()
+        message: inputMessage.trim(),
       };
-  
+
       console.log("Sending message:", newMessage);
       sendMessage(newMessage);
       setInputMessage("");
@@ -141,7 +143,11 @@ const LeftSidebarOpenUi = ({
 
   const handleMoveUser = (userId) => {
     const userName = users.find((user) => user.id === userId);
-    notify("success", "Success", `${userName.name} has been moved to the waiting room`);
+    notify(
+      "success",
+      "Success",
+      `${userName.name} has been moved to the waiting room`
+    );
     setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
     setIsMoveModalOpen(false);
   };
@@ -165,14 +171,14 @@ const LeftSidebarOpenUi = ({
   }, [isModeratorPopupModalOpen]);
 
   useEffect(() => {
-    console.log("triggers")
+    console.log("triggers");
     if (socket) {
       console.log("Socket connected in LeftSidebarOpenUi:", socket.id);
       socket.on("newMessage", (message) => {
         console.log("Received new message:", message);
-        setMessages(prevMessages => [...prevMessages, message]);
+        setMessages((prevMessages) => [...prevMessages, message]);
       });
-  
+
       return () => {
         console.log("Cleaning up socket listeners in LeftSidebarOpenUi");
         socket.off("newMessage");
@@ -375,7 +381,7 @@ const LeftSidebarOpenUi = ({
                     <div className="flex-grow-1 text-xs ">
                       <p className="pb-1 font-bold">{user.name}</p>
                     </div>
-                    </div>
+                  </div>
                 ))}
 
             {activeTab === "participantChat" && selectedChat && (
@@ -390,31 +396,56 @@ const LeftSidebarOpenUi = ({
                   />
                 </div>
                 <div className="flex flex-col gap-2 flex-grow w-full overflow-y-auto">
-                  {console.log("ui",messages.filter(message => message.senderName === selectedChat.name && message.receiverName === userName))}
+                  {console.log(
+                    "ui",
+                    messages.filter(
+                      (message) =>
+                        message.senderName === selectedChat.name &&
+                        message.receiverName === userName
+                    )
+                  )}
                   {messages
-                    .filter(message => 
-                      (message.senderName === selectedChat.name && message.receiverName === userName) ||
-                      (message.senderName === userName && message.receiverName === selectedChat.name)
+                    .filter(
+                      (message) =>
+                        (message.senderName === selectedChat.name &&
+                          message.receiverName === userName) ||
+                        (message.senderName === userName &&
+                          message.receiverName === selectedChat.name)
                     )
                     .map((message, index) => (
-                      <div key={index} className={`flex items-center gap-2 ${
-                        message.senderName === userName ? "justify-end" : "justify-start"
-                      }`}>
-                        <div className={`flex flex-col ${
-                          message.senderName === userName ? "items-end" : "items-start"
-                        }`}>
-                          <p className={`text-[12px] ${
-                            message.senderName === userName ? "text-blue-600" : "text-green-600"
-                          }`}>
-                            <span className="font-bold">{message.senderName}:</span> {message.message}
+                      <div
+                        key={index}
+                        className={`flex items-center gap-2 ${
+                          message.senderName === userName
+                            ? "justify-end"
+                            : "justify-start"
+                        }`}
+                      >
+                        <div
+                          className={`flex flex-col ${
+                            message.senderName === userName
+                              ? "items-end"
+                              : "items-start"
+                          }`}
+                        >
+                          <p
+                            className={`text-[12px] ${
+                              message.senderName === userName
+                                ? "text-blue-600"
+                                : "text-green-600"
+                            }`}
+                          >
+                            <span className="font-bold">
+                              {message.senderName}:
+                            </span>{" "}
+                            {message.message}
                           </p>
                           <p className="text-[#1a1a1a] text-[10px]">
                             {new Date(message.timestamp).toLocaleTimeString()}
                           </p>
                         </div>
                       </div>
-                    ))
-                  }
+                    ))}
                 </div>
 
                 <div className="flex justify-between items-center gap-2 relative w-full mt-2">
@@ -441,50 +472,57 @@ const LeftSidebarOpenUi = ({
           </div>
         </div>
       )}
-      {waitingRoom?.length > 0 && activeTab === "participantList" && role === "Moderator" && (
-        <div className="flex-grow pt-2 bg-custom-gray-8 p-4 rounded-xl mb-4 overflow-y-auto mx-4" key={waitingRoom?.length}>
-          <div className="flex justify-between items-center py-2">
-            <h1 className="font-bold text-sm ">
-              Waiting ({waitingRoom?.length})
-            </h1>
-            <Button
-              variant="primary"
-              type="submit"
-              children="Admit All"
-              className="text-xs px-2 py-1 rounded-lg text-white"
-              onClick={() =>
-                waitingRoom?.forEach((participant) =>
-                  acceptParticipant(participant)
-                )
-              }
-            />
-          </div>
-          {waitingRoom?.map((user) => (
-            <div
-              className="flex justify-center items-center gap-2 py-1"
-              key={user?.fullName}
-            >
-              <p className="text-[#1a1a1a] text-[10px] flex-grow">
-                {user?.name}
-              </p>
-              <div className="flex justify-center items-center gap-1">
-                <Button
-                  variant="primary"
-                  type="submit"
-                  children="Admit"
-                  className="text-xs px-2 py-1 rounded-lg text-white"
-                  onClick={() => acceptParticipant(user)}
-                />
-                <Button
-                  type="submit"
-                  children="Remove"
-                  className="text-xs px-2 py-1 rounded-lg text-white"
-                />
-              </div>
+      {waitingRoom?.length > 0 &&
+        activeTab === "participantList" &&
+        role === "Moderator" && (
+          <div
+            className="flex-grow pt-2 bg-custom-gray-8 p-4 rounded-xl mb-4 overflow-y-auto mx-4"
+            key={waitingRoom?.length}
+          >
+            <div className="flex justify-between items-center py-2">
+              <h1 className="font-bold text-sm ">
+                Waiting ({waitingRoom?.length})
+              </h1>
+              <Button
+                variant="primary"
+                type="submit"
+                children="Admit All"
+                className="text-xs px-2 py-1 rounded-lg text-white"
+                onClick={() =>
+                  waitingRoom?.forEach((participant) =>
+                    acceptParticipant(participant)
+                  )
+                }
+              />
             </div>
-          ))}
-        </div>
-      )}
+            {waitingRoom?.map((user) => (
+              <div
+                className="flex justify-center items-center gap-2 py-1"
+                key={user?.fullName}
+              >
+                <p className="text-[#1a1a1a] text-[10px] flex-grow">
+                  {user?.name}
+                </p>
+                <div className="flex justify-center items-center gap-1">
+                  <Button
+                    variant="primary"
+                    type="submit"
+                    children="Admit"
+                    className="text-xs px-2 py-1 rounded-lg text-white"
+                    onClick={() => {
+                      acceptParticipant(user), addUser("123", user?.name);
+                    }}
+                  />
+                  <Button
+                    type="submit"
+                    children="Remove"
+                    className="text-xs px-2 py-1 rounded-lg text-white"
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       {isRemoveModalOpen && (
         <RemoveUserModal
           onClose={closeRemoveUserModal}
