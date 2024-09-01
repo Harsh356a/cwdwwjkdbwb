@@ -16,7 +16,7 @@ function Chat() {
 
     if (token && userName) {
       console.log('Token sent to server:', token);
-      const newSocket = io('http://localhost:8008/user-namespace', {
+      const newSocket = io('https://harshamplifybe.onrender.com/user-namespace', {
         auth:  {token} 
       });
       console.log('new socket', newSocket)

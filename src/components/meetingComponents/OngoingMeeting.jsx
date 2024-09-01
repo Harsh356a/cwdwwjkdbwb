@@ -29,6 +29,7 @@ const OngoingMeeting = ({ users,peerData }) => {
         </div>
       </div>
       {/* video stream */}
+      {console.log("checing query params",peerData)}
       <iframe
         src={`https://testing--inspiring-cendol-60afd6.netlify.app/room/123?userName=${peerData}?roomName="123`}
         width="800px"

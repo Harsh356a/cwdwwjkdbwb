@@ -40,7 +40,7 @@ const Page = () => {
   };
 
   useEffect(() => {
-    const newSocket = io("http://localhost:8008/participant-namespace");
+    const newSocket = io("https://harshamplifybe.onrender.com/participant-namespace");
     setSocket(newSocket);
 
     newSocket.on("meetingStarted", (waitingList) => {
